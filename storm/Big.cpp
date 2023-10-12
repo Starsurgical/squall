@@ -32,12 +32,66 @@ void SBigDel(BigData* num) {
     delete num;
 }
 
+void SBigDiv(BigData* a, BigData* b, BigData* c) {
+    uint32_t allocCount = 0;
+    auto& scratch = a->Stack().Alloc(&allocCount);
+
+    Div(a->Primary(), scratch, b->Primary(), c->Primary(), a->Stack());
+
+    a->Stack().Free(allocCount);
+}
+
 void SBigFromBinary(BigData* num, const void* data, uint32_t bytes) {
     FromBinary(num->Primary(), data, bytes);
 }
 
 void SBigFromUnsigned(BigData* num, uint32_t val) {
     FromUnsigned(num->Primary(), val);
+}
+
+void SBigInc(BigData* a, BigData* b) {
+    Add(a->Primary(), b->Primary(), 1);
+}
+
+int SBigIsEven(BigData* num) {
+    int result = 1;
+
+    if (num->Primary().Count() == 0) {
+        return result;
+    }
+
+    if (num->Primary().Count() <= 0) {
+        result = 0;
+    } else if (num->Primary()[0] % 2 != 0) {
+        result = 0;
+    }
+    return result;
+}
+
+int SBigIsOdd(BigData* num) {
+    num->Primary().Trim();
+    int result = 0;
+
+    if (num->Primary().Count() == 0) {
+        return result;
+    }
+
+    if (num->Primary().Count() <= 0) {
+        result = 0;
+    } else if (num->Primary()[0] % 2 != 0) {
+        result = 1;
+    }
+    return result;
+}
+
+int SBigIsOne(BigData* num) {
+    num->Primary().Trim();
+    return num->Primary().Count() == 1 && num->Primary().IsUsed(0) && num->Primary()[0] == 1;
+}
+
+int SBigIsZero(BigData* num) {
+    num->Primary().Trim();
+    return num->Primary().Count() == 0;
 }
 
 void SBigMod(BigData* a, BigData* b, BigData* c) {
@@ -53,6 +107,10 @@ void SBigMul(BigData* a, BigData* b, BigData* c) {
     Mul(a->Primary(), b->Primary(), c->Primary(), a->Stack());
 }
 
+void SBigMulMod(BigData* a, BigData* b, BigData* c, BigData* d) {
+    MulMod(a->Primary(), b->Primary(), c->Primary(), d->Primary(), a->Stack());
+}
+
 void SBigNew(BigData** num) {
     auto m = SMemAlloc(sizeof(BigData), __FILE__, __LINE__, 0x0);
     *num = new (m) BigData();
@@ -60,6 +118,14 @@ void SBigNew(BigData** num) {
 
 void SBigPowMod(BigData* a, BigData* b, BigData* c, BigData* d) {
     PowMod(a->Primary(), b->Primary(), c->Primary(), d->Primary(), a->Stack());
+}
+
+void SBigSetOne(BigData* num) {
+    SetOne(num->Primary());
+}
+
+void SBigSetZero(BigData* num) {
+    SetZero(num->Primary());
 }
 
 void SBigShl(BigData* a, BigData* b, uint32_t shift) {
