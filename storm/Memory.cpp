@@ -1,4 +1,5 @@
 #include "storm/Memory.hpp"
+#include <cstring>
 
 constexpr size_t ALIGNMENT = 8;
 
@@ -62,5 +63,24 @@ void* SMemReAlloc(void* ptr, size_t bytes, const char* filename, int32_t linenum
         }
 
         return nullptr;
+    }
+}
+
+void SMemCopy(void* dest, const void* source, size_t size) {
+    std::memmove(dest, source, size);
+}
+
+void SMemFill(void* location, size_t length, uint8_t fillwith) {
+    std::memset(location, fillwith, length);
+}
+
+void SMemMove(void* dest, const void* source, size_t size) {
+    std::memmove(dest, source, size);
+}
+
+void SMemZero(void* location, size_t length) {
+    uint8_t* loc = (uint8_t*)location;
+    for (size_t i = length; i; i--) {
+        *loc++ = 0;
     }
 }

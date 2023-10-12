@@ -425,11 +425,14 @@ uint32_t SStrPack(char* dest, const char* source, uint32_t destsize) {
 size_t SStrPrintf(char* dest, size_t maxchars, const char* format, ...) {
     va_list va;
     va_start(va, format);
+    return SStrVPrintf(dest, maxchars, format, va);
+}
 
+size_t SStrVPrintf(char* dest, size_t maxchars, const char* format, va_list args) {
     STORM_ASSERT(dest);
     STORM_ASSERT(format);
 
-    return ISStrVPrintf(format, va, dest, maxchars);
+    return ISStrVPrintf(format, args, dest, maxchars);
 }
 
 const char* SStrStr(const char* string, const char* search) {
@@ -449,6 +452,33 @@ const char* SStrStr(const char* string, const char* search) {
     auto substring = string;
 
     while (SStrCmp(substring, search, searchLength)) {
+        substring++;
+
+        if (!*substring) {
+            return nullptr;
+        }
+    }
+
+    return substring;
+}
+
+const char* SStrStrI(const char* string, const char* search) {
+    STORM_ASSERT(string);
+    STORM_ASSERT(search);
+
+    if (!*string) {
+        return nullptr;
+    }
+
+    auto searchEnd = search;
+    while (*searchEnd) {
+        searchEnd++;
+    }
+    size_t searchLength = searchEnd - search;
+
+    auto substring = string;
+
+    while (SStrCmpI(substring, search, searchLength)) {
         substring++;
 
         if (!*substring) {
