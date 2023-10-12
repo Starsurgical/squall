@@ -24,9 +24,9 @@ TEST_CASE("SRgnCombineRectf", "[region]") {
         SRgnGetBoundingRectf(region, &boundingRect);
 
         REQUIRE(boundingRect.left == 0.0f);
-        REQUIRE(boundingRect.bottom == 0.0f);
+        REQUIRE(boundingRect.top == 0.0f);
         REQUIRE(boundingRect.right == 1.0f);
-        REQUIRE(boundingRect.top == 1.0f);
+        REQUIRE(boundingRect.bottom == 1.0f);
 
         SRgnDelete(region);
     }
@@ -45,9 +45,9 @@ TEST_CASE("SRgnCombineRectf", "[region]") {
         SRgnGetBoundingRectf(region, &boundingRect);
 
         REQUIRE(boundingRect.left == 0.0f);
-        REQUIRE(boundingRect.bottom == 0.0f);
+        REQUIRE(boundingRect.top == 0.0f);
         REQUIRE(boundingRect.right == 1.0f);
-        REQUIRE(boundingRect.top == 1.0f);
+        REQUIRE(boundingRect.bottom == 1.0f);
 
         SRgnDelete(region);
     }
@@ -66,9 +66,9 @@ TEST_CASE("SRgnCombineRectf", "[region]") {
         SRgnGetBoundingRectf(region, &boundingRect);
 
         REQUIRE(boundingRect.left == 0.0f);
-        REQUIRE(boundingRect.bottom == 0.0f);
-        REQUIRE(boundingRect.right == 0.0f);
         REQUIRE(boundingRect.top == 0.0f);
+        REQUIRE(boundingRect.right == 0.0f);
+        REQUIRE(boundingRect.bottom == 0.0f);
 
         SRgnDelete(region);
     }
@@ -87,9 +87,9 @@ TEST_CASE("SRgnCombineRectf", "[region]") {
         SRgnGetBoundingRectf(region, &boundingRect);
 
         REQUIRE(boundingRect.left == 0.0f);
-        REQUIRE(boundingRect.bottom == 0.0f);
+        REQUIRE(boundingRect.top == 0.0f);
         REQUIRE(boundingRect.right == 1.0f);
-        REQUIRE(boundingRect.top == 1.0f);
+        REQUIRE(boundingRect.bottom == 1.0f);
 
         SRgnDelete(region);
     }

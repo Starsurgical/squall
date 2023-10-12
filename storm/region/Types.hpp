@@ -10,9 +10,16 @@ DECLARE_HANDLE(HLOCKEDRGN);
 
 struct RECTF {
     float left;
-    float bottom;
-    float right;
     float top;
+    float right;
+    float bottom;
+};
+
+struct RECTI {
+    long left;
+    long top;
+    long right;
+    long bottom;
 };
 
 #endif

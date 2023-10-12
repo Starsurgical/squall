@@ -18,23 +18,23 @@ void AddSourceRect(TSGrowableArray<SOURCE>* sourceArray, const RECTF* rect, void
 
 int32_t CheckForIntersection(const RECTF* sourceRect, const RECTF* targetRect) {
     return sourceRect->left < targetRect->right
-        && sourceRect->bottom < targetRect->top
+        && sourceRect->top < targetRect->bottom
         && sourceRect->right > targetRect->left
-        && sourceRect->top > targetRect->bottom;
+        && sourceRect->bottom > targetRect->top;
 }
 
 int32_t CompareRects(const RECTF* rect1, const RECTF* rect2) {
     return rect1->left == rect2->left
-        && rect1->bottom == rect2->bottom
+        && rect1->top == rect2->top
         && rect1->right == rect2->right
-        && rect1->top == rect2->top;
+        && rect1->bottom == rect2->bottom;
 }
 
 void DeleteRect(RECTF* rect) {
     rect->left = std::numeric_limits<float>::max();
-    rect->bottom = std::numeric_limits<float>::max();
-    rect->right = std::numeric_limits<float>::max();
     rect->top = std::numeric_limits<float>::max();
+    rect->right = std::numeric_limits<float>::max();
+    rect->bottom = std::numeric_limits<float>::max();
 }
 
 void FragmentSourceRectangles(TSGrowableArray<SOURCE>* sourceArray, uint32_t firstIndex, uint32_t lastIndex, int32_t previousOverlap, const RECTF* rect, void* param, int32_t sequence) {
@@ -67,7 +67,7 @@ void FragmentSourceRectangles(TSGrowableArray<SOURCE>* sourceArray, uint32_t fir
 }
 
 int32_t IsNullRect(RECTF* rect) {
-    return rect->left >= rect->right || rect->bottom >= rect->top;
+    return rect->left >= rect->right || rect->top >= rect->bottom;
 }
 
 void ClearRegion(RGN* rgn) {
@@ -158,6 +158,17 @@ void ProcessBooleanOperation(TSGrowableArray<SOURCE>* sourceArray, int32_t combi
     }
 }
 
+void SRgnClear(HSRGN handle) {
+    STORM_ASSERT(handle);
+
+    HLOCKEDRGN lockedHandle;
+    auto rgn = s_rgntable.Lock(handle, &lockedHandle, 0);
+
+    ClearRegion(rgn);
+
+    s_rgntable.Unlock(lockedHandle);
+}
+
 void SRgnCombineRectf(HSRGN handle, RECTF* rect, void* param, int32_t combineMode) {
     STORM_ASSERT(handle);
     STORM_ASSERT(rect);
@@ -189,6 +200,13 @@ void SRgnCombineRectf(HSRGN handle, RECTF* rect, void* param, int32_t combineMod
     s_rgntable.Unlock(lockedHandle);
 }
 
+void SRgnCombineRect(HSRGN handle, RECTI* rect, void* param, int32_t combineMode) {
+    STORM_ASSERT(rect);
+
+    RECTF rectf = { rect->left, rect->top, rect->right, rect->bottom };
+    SRgnCombineRectf(handle, &rectf, param, combineMode);
+}
+
 void SRgnCreate(HSRGN* handlePtr, uint32_t reserved) {
     STORM_ASSERT(handlePtr);
     STORM_ASSERT(!reserved);
@@ -212,9 +230,9 @@ void SRgnGetBoundingRectf(HSRGN handle, RECTF* rect) {
     STORM_ASSERT(rect);
 
     rect->left = std::numeric_limits<float>::max();
-    rect->bottom = std::numeric_limits<float>::max();
+    rect->top = std::numeric_limits<float>::max();
     rect->right = std::numeric_limits<float>::min();
-    rect->top = std::numeric_limits<float>::min();
+    rect->bottom = std::numeric_limits<float>::min();
 
     HLOCKEDRGN lockedHandle;
     auto rgn = s_rgntable.Lock(handle, &lockedHandle, 0);
@@ -229,9 +247,9 @@ void SRgnGetBoundingRectf(HSRGN handle, RECTF* rect) {
 
         if (!(source->flags & 0x10000)) {
             rect->left = std::min(source->rect.left, rect->left);
-            rect->bottom = std::min(source->rect.bottom, rect->bottom);
+            rect->top = std::min(source->rect.top, rect->top);
             rect->right = std::max(source->rect.right, rect->right);
-            rect->top = std::max(source->rect.top, rect->top);
+            rect->bottom = std::max(source->rect.bottom, rect->bottom);
         }
     }
 
@@ -239,8 +257,88 @@ void SRgnGetBoundingRectf(HSRGN handle, RECTF* rect) {
 
     if (IsNullRect(rect)) {
         rect->left = 0.0f;
-        rect->bottom = 0.0f;
-        rect->right = 0.0f;
         rect->top = 0.0f;
+        rect->right = 0.0f;
+        rect->bottom = 0.0f;
     }
+}
+
+void SRgnGetBoundingRect(HSRGN handle, RECTI* rect) {
+    STORM_ASSERT(rect);
+
+    RECTF rectf;
+    SRgnGetBoundingRectf(handle, &rectf);
+    *rect = { long(rectf.left), long(rectf.top), long(rectf.right), long(rectf.bottom) };
+}
+
+int SRgnIsPointInRegionf(HSRGN handle, float x, float y) {
+    STORM_ASSERT(handle);
+
+    HLOCKEDRGN lockedHandle;
+    auto rgn = s_rgntable.Lock(handle, &lockedHandle, 0);
+
+    if (!rgn) {
+        s_rgntable.Unlock(lockedHandle);
+        return 0;
+    }
+
+    int result = 0;
+
+    for (int i = 0; i < rgn->source.Count(); i++) {
+        SOURCE *src = &rgn->source[i];
+        if (src->flags & 0x10000)
+            continue;
+
+        if (x >= src->rect.left && y >= src->rect.top && x < src->rect.right && y < src->rect.bottom) {
+            result = 1;
+            break;
+        }
+    }
+
+    s_rgntable.Unlock(lockedHandle);
+    return result;
+}
+
+int SRgnIsPointInRegion(HSRGN handle, int x, int y) {
+    return SRgnIsPointInRegionf(handle, x, y);
+}
+
+int SRgnIsRectInRegionf(HSRGN handle, RECTF* rect) {
+    STORM_ASSERT(handle);
+    STORM_ASSERT(rect);
+
+    HLOCKEDRGN lockedHandle;
+    auto rgn = s_rgntable.Lock(handle, &lockedHandle, 0);
+    
+    if (!rgn) {
+        s_rgntable.Unlock(lockedHandle);
+        return 0;
+    }
+
+    int result = 0;
+
+    for (int i = 0; i < rgn->source.Count(); i++) {
+        SOURCE* src = &rgn->source[i];
+        if (src->flags & 0x10000)
+            continue;
+
+        if (src->rect.right > rect->left
+            && src->rect.bottom > rect->top
+            && rect->right > src->rect.left
+            && rect->bottom > src->rect.top) {
+
+            result = 1;
+            break;
+        }
+    }
+
+    s_rgntable.Unlock(lockedHandle);
+    return result;
+}
+
+int SRgnIsRectInRegion(HSRGN handle, RECTI* rect) {
+    STORM_ASSERT(rect);
+
+    RECTF rectf = { rect->left, rect->top, rect->right, rect->bottom };
+    return SRgnIsRectInRegionf(handle, &rectf);
 }
