@@ -31,16 +31,28 @@
     }                                            \
     (void)0
 
-[[noreturn]] void SErrDisplayAppFatal(const char* format, ...);
-
+// 461
 int32_t SErrDisplayError(uint32_t errorcode, const char* filename, int32_t linenumber, const char* description, int32_t recoverable, uint32_t exitcode, uint32_t a7);
 
-int32_t SErrDisplayErrorFmt(uint32_t errorcode, const char* filename, int32_t linenumber, int32_t recoverable, uint32_t exitcode, const char* format, ...);
+// 463
+uint32_t SErrGetLastError();
 
-void SErrPrepareAppFatal(const char* filename, int32_t linenumber);
-
+// 465
 void SErrSetLastError(uint32_t errorcode);
 
-uint32_t SErrGetLastError();
+// 468
+void SErrSuppressErrors(int suppress);
+
+// 562
+int32_t SErrDisplayErrorFmt(uint32_t errorcode, const char* filename, int32_t linenumber, int32_t recoverable, uint32_t exitcode, const char* format, ...);
+
+// 563
+int SErrIsDisplayingError();
+
+// 564
+void SErrPrepareAppFatal(const char* filename, int32_t linenumber);
+
+// 566
+[[noreturn]] void SErrDisplayAppFatal(const char* format, ...);
 
 #endif

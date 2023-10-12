@@ -8,6 +8,8 @@
 #endif
 
 static uint32_t s_lasterror = ERROR_SUCCESS;
+static int s_suppress;
+static int s_displaying;
 
 [[noreturn]] void SErrDisplayAppFatal(const char* format, ...) {
     va_list args;
@@ -20,6 +22,11 @@ static uint32_t s_lasterror = ERROR_SUCCESS;
 }
 
 int32_t SErrDisplayError(uint32_t errorcode, const char* filename, int32_t linenumber, const char* description, int32_t recoverable, uint32_t exitcode, uint32_t a7) {
+    if (s_suppress || s_displaying)
+        return 0;
+
+    s_displaying = 1;
+
     // TODO
 
     printf("\n=========================================================\n");
@@ -84,4 +91,12 @@ void SErrSetLastError(uint32_t errorcode) {
 
 uint32_t SErrGetLastError() {
     return s_lasterror;
+}
+
+void SErrSuppressErrors(int suppress) {
+    s_suppress = suppress;
+}
+
+int SErrIsDisplayingError() {
+    return s_displaying;
 }
