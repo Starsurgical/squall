@@ -147,12 +147,11 @@ uint32_t ExtractLowPartLargeSum(uint64_t& value, uint64_t add) {
 }
 
 uint32_t ExtractLowPartSx(uint64_t& value) {
-    auto low = static_cast<uint32_t>(value);
+    uint32_t low = value & 0xFFFFFFFF;
     value >>= 32;
 
     if (value >= 0x80000000) {
-        reinterpret_cast<uint32_t*>(&value)[0] = value;
-        reinterpret_cast<uint32_t*>(&value)[1] = -1;
+        value |= 0xFFFFFFFFULL << 32;
     }
 
     return low;
@@ -393,8 +392,22 @@ void Sub(BigBuffer& a, const BigBuffer& b, const BigBuffer& c) {
     }
 
     a.SetCount(i);
+    // This assert does not exist in retail WoW or Starcraft.
+    //STORM_ASSERT(!borrow);
+}
 
-    STORM_ASSERT(!borrow);
+void Sub(BigBuffer& a, const BigBuffer& b, uint32_t c) {
+    uint64_t borrow = 0;
+
+    uint32_t i = 0;
+    for (; b.IsUsed(i); i++) {
+        borrow += b[i] - static_cast<uint64_t>(c);;
+        a[i] = ExtractLowPartSx(borrow);
+    }
+
+    a.SetCount(i);
+    // This assert does not exist in retail WoW or Starcraft.
+    //STORM_ASSERT(!borrow);
 }
 
 void ToBinaryAppend(TSGrowableArray<uint8_t>& output, const BigBuffer& buffer) {
