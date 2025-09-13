@@ -5,7 +5,6 @@
 #include <cstdint>
 
 DECLARE_STORM_HANDLE(HSRGN);
-
 DECLARE_STORM_HANDLE(HLOCKEDRGN);
 
 struct RECTF {
@@ -14,6 +13,14 @@ struct RECTF {
     float right;
     float top;
 };
+
+#if defined(WHOA_SYSTEM_WIN)
+#include <Windows.h>
+#else
+struct RECT {
+    long left, top, right, bottom;
+};
+#endif
 
 // Combine modes
 #define SRGN_AND 1
