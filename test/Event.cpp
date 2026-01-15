@@ -1,4 +1,5 @@
 #include "EventTest.hpp"
+#include "storm/Error.hpp"
 
 static void STORMAPI TestBreakEventHandlerSelf(void* data) {
     EventHandlerTest::RegisterCall(10, data);
@@ -413,6 +414,18 @@ static void STORMAPI TestRegisterEventHandler(void* data) {
 
 TEST_CASE("SEvtRegisterHandler", "[event]") {
     EventHandlerTest test;
+
+#if defined(NDEBUG) && !defined(WHOA_ASSERTIONS_ENABLED)
+    SECTION("validates arguments") {
+        SErrSetLastError(0);
+        CHECK(SEvtRegisterHandler(0, 0, 0, 1, &TestEventHandler1) == 0);
+        CHECK(SErrGetLastError() == ERROR_INVALID_PARAMETER);
+
+        SErrSetLastError(0);
+        CHECK(SEvtRegisterHandler(0, 0, 0, 0, nullptr) == 0);
+        CHECK(SErrGetLastError() == ERROR_INVALID_PARAMETER);
+    }
+#endif
 
     SECTION("registers an event handler") {
         CHECK(SEvtRegisterHandler(7357, 1, 2, 0, &TestEventHandler1) == 1);

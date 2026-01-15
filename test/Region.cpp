@@ -1,4 +1,5 @@
 #include "RegionTest.hpp"
+#include "storm/Error.hpp"
 #include <cfloat>
 
 static_assert(sizeof(RECT::left) == sizeof(RECTF::left), "RECT doesn't match RECTF");
@@ -59,6 +60,26 @@ TEST_CASE("SRgnCombineRectf", "[region]") {
     RgnDataTest region;
     RECTF baseRect = { 0.0f, 0.0f, 1.0f, 1.0f };
     RECTF testRect = { 0.5f, 0.6f, 1.8f, 1.4f };
+
+#if defined(NDEBUG) && !defined(WHOA_ASSERTIONS_ENABLED)
+    SECTION("validates arguments") {
+        SErrSetLastError(0);
+        SRgnCombineRectf(nullptr, &testRect, nullptr, SRGN_OR);
+        CHECK(SErrGetLastError() == ERROR_INVALID_PARAMETER);
+
+        SErrSetLastError(0);
+        SRgnCombineRectf(region, nullptr, nullptr, SRGN_OR);
+        CHECK(SErrGetLastError() == ERROR_INVALID_PARAMETER);
+
+        SErrSetLastError(0);
+        SRgnCombineRectf(region, &testRect, nullptr, 0);
+        CHECK(SErrGetLastError() == ERROR_INVALID_PARAMETER);
+
+        SErrSetLastError(0);
+        SRgnCombineRectf(region, &testRect, nullptr, 6);
+        CHECK(SErrGetLastError() == ERROR_INVALID_PARAMETER);
+    }
+#endif
 
     SECTION("does nothing with an invalid region object") {
         HSRGN inval = reinterpret_cast<HSRGN>(1234);
