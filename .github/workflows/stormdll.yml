@@ -1,0 +1,68 @@
+name: Test runner against storm.dll
+on: [workflow_dispatch]
+jobs:
+  build:
+    name: ${{ matrix.patch.flavor }} / ${{ matrix.patch.name }} (${{ matrix.patch.year }})
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        patch:
+          - name: BW-1.16.1
+            url: http://ftp.blizzard.com/pub/broodwar/patches/PC/BW-1161.exe
+            flavor: SC1
+            year: 2007
+          - name: BW-1.17.0
+            url: http://ftp.blizzard.com/pub/broodwar/patches/PC/BW-1170.exe
+            flavor: SC1
+            year: 2016
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Restore storm.dll cache
+        id: cache-storm
+        uses: actions/cache/restore@v4
+        with:
+          path: storm.dll
+          key: storm-dll-${{ matrix.patch.name }}
+
+      - name: Download patch
+        if: steps.cache-storm.outputs.cache-hit != 'true'
+        run: curl -L -o patch.exe "${{ matrix.patch.url }}"
+
+      - name: Install MPQ extractor
+        if: steps.cache-storm.outputs.cache-hit != 'true'
+        run: curl -L -o mpqcli.exe "https://github.com/TheGrayDot/mpqcli/releases/download/v0.9.6/mpqcli-windows-amd64.exe"
+
+      - name: Extract storm.dll from embedded MPQ
+        if: steps.cache-storm.outputs.cache-hit != 'true'
+        run: |
+          .\mpqcli.exe extract -f storm.dll -o . patch.exe
+          dir storm.dll
+
+      - name: Save storm.dll cache
+        if: steps.cache-storm.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: storm.dll
+          key: storm-dll-${{ matrix.patch.name }}
+
+      - name: Prepare
+        run: mkdir build
+
+      - name: Configure
+        run: cd build && cmake .. -A Win32 -DWHOA_TEST_STORMDLL=1 -DCMAKE_BUILD_TYPE=Release -DWHOA_STORM_FLAVOR=${{ matrix.patch.flavor }} -DWHOA_STORMDLL_VERSION=${{ matrix.patch.year }}
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Copy storm.dll into test directory
+        run: Copy-Item storm.dll "build/test/Release/storm.dll" -Force
+
+      - name: Test
+        run: |
+          dir "./build/test/Release/"
+          "./build/test/Release/StormTest.exe"
