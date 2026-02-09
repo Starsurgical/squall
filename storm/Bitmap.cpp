@@ -1,9 +1,6 @@
-#include <algorithm>
-
 #include "Bitmap.hpp"
 #include "Error.hpp"
 #include "Memory.hpp"
-#include "String.hpp"
 
 
 #define BMP_SIGNATURE 0x4D42
@@ -105,8 +102,70 @@ void FlipImage(uint8_t* dest, uint8_t* source, int destbytes, int destwidth, int
 }
 */
 
-void UncompressPcxImage(uint8_t* dest, uint8_t* source, int32_t destbytes, int32_t sourcebytes, int32_t width, int32_t bytesperline, int32_t planes) {
-    // TODO
+void UncompressPcxImage(
+    uint8_t* dest,
+    const uint8_t* source,
+    const int32_t destbytes,
+    const int32_t sourcebytes,
+    const int32_t bytesperline,
+    const int32_t planes
+) {
+    // PCX uses a simple RLE compression scheme:
+    // - If byte has top 2 bits set (0xC0), it's a run-count byte
+    //   - Lower 6 bits = run count (1-63)
+    //   - Next byte = value to repeat
+    // - Otherwise, it's a literal value (run count = 1)
+    //
+    // Important: Decoding breaks at the end of each scan line
+    // Each scan line has 'bytesperline' bytes per plane, with 'planes' planes
+
+    int32_t sourceIndex = 0;
+    int32_t destIndex = 0;
+    const int32_t scanLineLength = bytesperline * planes;
+
+    // Process the image scan line by scan line
+    while (destIndex < destbytes && sourceIndex < sourcebytes) {
+        const int32_t scanLineStart = destIndex;
+        int32_t scanLineEnd = scanLineStart + scanLineLength;
+
+        // Clamp to destination buffer size
+        if (scanLineEnd > destbytes) {
+            scanLineEnd = destbytes;
+        }
+
+        // Decode one scan line
+        while (destIndex < scanLineEnd && sourceIndex < sourcebytes) {
+            const uint8_t byte = source[sourceIndex++];
+
+            if ((byte & 0xC0) == 0xC0) {
+                // Two-byte run code
+                // Lower 6 bits contain the run count
+                const int32_t runCount = byte & 0x3F;
+
+                // Check if we have the run value byte
+                if (sourceIndex >= sourcebytes) {
+                    // Incomplete run code at end of data
+                    break;
+                }
+
+                const uint8_t runValue = source[sourceIndex++];
+
+                // Write the run, but don't exceed the scan line boundary
+                for (int32_t i = 0; i < runCount && destIndex < scanLineEnd; i++) {
+                    dest[destIndex++] = runValue;
+                }
+            } else {
+                // One-byte literal value
+                dest[destIndex++] = byte;
+            }
+        }
+
+        // If we didn't fill the entire scan line, we've run out of source data
+        // This is an error condition, but we'll just stop
+        if (destIndex < scanLineEnd) {
+            break;
+        }
+    }
 }
 
 /*
@@ -162,6 +221,19 @@ int32_t DecodePcxMem(PCXFILEREC *imagedata, int32_t imagebytes, STORM_PALETTEENT
     uint32_t imageheight = imagedata->header.y2 - imagedata->header.y1 + 1;
     uint32_t imagebitdepth = imagedata->header.bitsperpixel;
 
+    // Check if extended 256-color palette is present
+    // According to PCX spec: 8-bit images may have a 769-byte palette at the end
+    // The palette starts with a marker byte 0x0C, followed by 768 bytes (256 RGB triples)
+    bool hasExtendedPalette = paletteentries &&
+            imagebitdepth == 8 &&
+            imagebytes >= sizeof(PCXFILEREC) + sizeof(PCXEXTPALREC);
+
+    if (hasExtendedPalette) {
+        // Check the palette marker byte (should be 0x0C)
+        uint8_t* paletteMarker = reinterpret_cast<uint8_t*>(imagedata) + imagebytes - sizeof(PCXEXTPALREC);
+        hasExtendedPalette = *paletteMarker == 0x0C;
+    }
+
     if (width) *width = imagewidth;
     if (height) *height = imageheight;
     if (bitdepth) *bitdepth = imagebitdepth;
@@ -173,7 +245,7 @@ int32_t DecodePcxMem(PCXFILEREC *imagedata, int32_t imagebytes, STORM_PALETTEENT
         }
 
         uint32_t extra = 0;
-        if (imagebitdepth == 8) {
+        if (hasExtendedPalette) {
             extra = sizeof(PCXEXTPALREC);
         }
 
@@ -182,12 +254,11 @@ int32_t DecodePcxMem(PCXFILEREC *imagedata, int32_t imagebytes, STORM_PALETTEENT
             reinterpret_cast<uint8_t*>(imagedata) + sizeof(PCXFILEREC),
             destbytes,
             imagebytes - extra - sizeof(PCXFILEREC),
-            imagewidth,
             imagedata->info.bytesperline,
             imagedata->info.planes);
     }
 
-    if (paletteentries && imagebitdepth == 8) {
+    if (hasExtendedPalette) {
         PCXRGBREC* paldata = reinterpret_cast<PCXEXTPALREC*>(reinterpret_cast<uint8_t*>(imagedata) + imagebytes - sizeof(PCXEXTPALREC))->pal256;
         for (int i = 0; i < 256; i++) {
             paletteentries[i].red = paldata[i].red;
