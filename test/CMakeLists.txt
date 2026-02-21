@@ -7,6 +7,7 @@ if(WHOA_TEST_STORMDLL)
         Event.cpp
         EventTest.cpp
         Memory.cpp
+        Message.cpp
         Region.cpp
         String.cpp
         Test.cpp
