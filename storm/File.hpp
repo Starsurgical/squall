@@ -42,6 +42,19 @@ DECLARE_STORM_HANDLE(HSFILE);
 #define SFILE_CURRENT 1
 #define SFILE_END 2
 
+#define SFILE_ERRORMODE_RETURNCODE 0
+#define SFILE_ERRORMODE_CUSTOM 1
+#define SFILE_ERRORMODE_FATAL 2
+
+typedef int32_t (STORMAPI *SFILEERRORPROC)(const char*, uint32_t, uint32_t);
+
+#define SFILE_DIRECT_ENABLE_RELATIVE 1
+#define SFILE_DIRECT_ENABLE_NOPATH 2
+
+#define SFILE_PLATFORM_ANY 0
+#define SFILE_PLATFORM_WIN32 1
+#define SFILE_PLATFORM_MAC 2
+
 /* // Leaving as documentation
 
 #define SFILE_AUTH_UNABLETOAUTHENTICATE 0
@@ -50,13 +63,6 @@ DECLARE_STORM_HANDLE(HSFILE);
 #define SFILE_AUTH_UNKNOWNSIGNATURE 3
 #define SFILE_AUTH_FIRSTAUTHENTIC 5
 #define SFILE_AUTH_AUTHENTICBLIZZARD 5
-
-#define SFILE_DIRECT_ENABLE_RELATIVE 1
-#define SFILE_DIRECT_ENABLE_NOPATH 2
-
-#define SFILE_PLATFORM_ANY 0
-#define SFILE_PLATFORM_WIN32 1
-#define SFILE_PLATFORM_MAC 2
 
 enum SARCHIVE_TYPE {
     SARCHIVE_MPQ,
@@ -76,14 +82,56 @@ int32_t STORMAPI SFileCloseArchive(HSARCHIVE handle);
 
 int32_t STORMAPI SFileCloseFile(HSFILE handle);
 
+int32_t STORMAPI SFileDestroy();
+
+int32_t STORMAPI SFileEnableDirectAccess(uint32_t access);
+
+#if defined(WHOA_SFILE_HAS_CDROM)
+int32_t STORMAPI SFileGetArchiveInfo(HSARCHIVE archive, int32_t* priority, int32_t* cdrom = nullptr);
+#else
+int32_t STORMAPI SFileGetArchiveInfo(HSARCHIVE archive, int32_t* priority);
+#endif
+
+int32_t STORMAPI SFileGetArchiveName(HSARCHIVE archive, char* buffer, uint32_t bufferchars);
+
+int32_t STORMAPI SFileGetBasePath(char* buffer, uint32_t bufferchars);
+
+int32_t STORMAPI SFileGetFileArchive(HSFILE file, HSARCHIVE* archive);
+
+int32_t STORMAPI SFileGetFileName(HSARCHIVE archive, char* buffer, uint32_t bufferchars);
+
 uint32_t STORMAPI SFileGetFileSize(HSFILE handle, uint32_t* filesizehigh = nullptr);
 
+void STORMAPI SFileGetInstallPath(char* buffer, uint32_t bufferchars, int32_t includeseparator);
+
+uint16_t STORMAPI SFileGetLocale();
+
+void STORMAPI SFileGetUserDataPath(char* buffer, uint32_t bufferchars, int32_t includeseparator);
+
+int32_t STORMAPI SFileLoadFile(const char* filename, void** buffer, uint32_t* bytes, uint32_t extrabytes = 0, LPOVERLAPPED overlapped = nullptr);
+
+int32_t STORMAPI SFileLoadFileEx(HSARCHIVE archive, const char* filename, void** buffer, uint32_t* bytes, uint32_t extrabytes, uint32_t flags, LPOVERLAPPED overlapped = nullptr);
+
 int32_t STORMAPI SFileOpenArchive(const char* archivename, int32_t priority, uint32_t flags, HSARCHIVE* handle);
+
+int32_t STORMAPI SFileOpenFile(const char* filename, HSFILE* handle);
 
 int32_t STORMAPI SFileOpenFileEx(HSARCHIVE archivehandle, const char* filename, uint32_t flags, HSFILE* handle);
 
 int32_t STORMAPI SFileReadFile(HSFILE handle, void* buffer, uint32_t bytestoread, uint32_t* bytesread = nullptr, LPOVERLAPPED overlapped = nullptr);
 
+int32_t STORMAPI SFileSetBasePath(const char* path);
+
 uint32_t STORMAPI SFileSetFilePointer(HSFILE handle, int32_t distancetomove, int32_t* distancetomovehigh, uint32_t movemethod);
+
+int32_t STORMAPI SFileSetIoErrorMode(uint32_t errormode, SFILEERRORPROC errorproc = nullptr);
+
+void STORMAPI SFileSetLocale(uint16_t lcid);
+
+void STORMAPI SFileSetPlatform(uint8_t platformId);
+
+void STORMAPI SFileSetUserDataPath(const char* datapath);
+
+int32_t SFileUnloadFile(void* buffer);
 
 #endif

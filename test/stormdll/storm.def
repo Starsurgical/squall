@@ -97,26 +97,26 @@ EXPORTS
     ;SFileDdaGetVolume             @259 NONAME
     ;SFileDdaInitialize            @260 NONAME
     ;SFileDdaSetVolume             @261 NONAME
-    ;SFileDestroy                  @262 NONAME
-    ;SFileEnableDirectAccess       @263 NONAME
-    ;SFileGetFileArchive           @264 NONAME
+    SFileDestroy                  @262 NONAME
+    SFileEnableDirectAccess       @263 NONAME
+    SFileGetFileArchive           @264 NONAME
     SFileGetFileSize              @265 NONAME
     SFileOpenArchive              @266 NONAME
-    ;SFileOpenFile                 @267 NONAME
+    SFileOpenFile                 @267 NONAME
     SFileOpenFileEx               @268 NONAME
     SFileReadFile                 @269 NONAME
-    ;SFileSetBasePath              @270 NONAME
+    SFileSetBasePath              @270 NONAME
     SFileSetFilePointer           @271 NONAME
-    ;SFileSetLocale                @272 NONAME
-    ;SFileGetBasePath              @273 NONAME
-    ;SFileSetIoErrorMode           @274 NONAME
-    ;SFileGetArchiveName           @275 NONAME
-    ;SFileGetFileName              @276 NONAME
-    ;SFileGetArchiveInfo           @277 NONAME
-    ;SFileSetPlatform              @278 NONAME
-    ;SFileLoadFile                 @279 NONAME
-    ;SFileUnloadFile               @280 NONAME
-    ;SFileLoadFileEx               @281 NONAME
+    SFileSetLocale                @272 NONAME
+    SFileGetBasePath              @273 NONAME
+    SFileSetIoErrorMode           @274 NONAME
+    SFileGetArchiveName           @275 NONAME
+    SFileGetFileName              @276 NONAME
+    SFileGetArchiveInfo           @277 NONAME
+    SFileSetPlatform              @278 NONAME
+    SFileLoadFile                 @279 NONAME
+    SFileUnloadFile               @280 NONAME
+    SFileLoadFileEx               @281 NONAME
     ;SFilePrioritizeRequest        @282 NONAME
     ;SFileCancelRequest            @283 NONAME
     ;SFileSetAsyncBudget           @284 NONAME
@@ -129,10 +129,10 @@ EXPORTS
     ;SFileReadFile2                @291 NONAME
     ;SFileLoadFile2                @292 NONAME
     ;SFileOpenFileAsArchive        @293 NONAME
-    ;SFileGetLocale                @294 NONAME
-    ;SFileGetInstallPath           @295 NONAME  ; SFileRegisterLoadNotifyProc in WC3
-    ;SFileGetUserDataPath          @296 NONAME  ; SFileGetFileCompressedSize in WC3
-    ;SFileSetUserDataPath          @297 NONAME  ; different in WC3
+    SFileGetLocale                @294 NONAME
+    SFileGetInstallPath           @295 NONAME  ; SFileRegisterLoadNotifyProc in WC3
+    SFileGetUserDataPath          @296 NONAME  ; SFileGetFileCompressedSize in WC3
+    SFileSetUserDataPath          @297 NONAME  ; different in WC3
     ;SFileAuthenticateArchiveEx    @299 NONAME
     ;SFileOpenPathAsArchive        @300 NONAME
 

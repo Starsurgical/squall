@@ -1,6 +1,7 @@
 #include "Comp.hpp"
 #include "Core.hpp"
 #include "Event.hpp"
+#include "File.hpp"
 #include "Region.hpp"
 #include "String.hpp"
 #include "Transparency.hpp"
@@ -24,7 +25,7 @@ int32_t STORMAPI StormDestroy() {
     // SBltDestroy();       // SC 1.17
     // SCodeDestroy();      // SC 1.17
     // SCmdDestroy();       // WoW 3.3.5 (win+mac), SC 1.17
-    // SFileDestroy();      // WoW 3.3.5 (mac)?, SC 1.17
+    SFileDestroy();         // WoW 3.3.5 (mac)?, SC 1.17
     // SFile::Destroy();    // WoW 0.5.3 (win)?
     SCompDestroy();         // WoW 3.3.5 (win)?
     SStrDestroy();          // WoW 3.3.5 (mac), SC 1.17

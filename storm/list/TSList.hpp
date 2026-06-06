@@ -200,7 +200,7 @@ int32_t TSList<T, TGetLink>::MemLineNo() const {
 
 template <class T, class TGetLink>
 T* TSList<T, TGetLink>::NewNode(uint32_t location, size_t extrabytes, uint32_t flags) {
-    void* m = SMemAlloc(sizeof(T) + extrabytes, this->MemFileName(), this->MemLineNo(), flags | 0x8);
+    void* m = SMemAlloc(sizeof(T) + extrabytes, this->MemFileName(), this->MemLineNo(), flags | SMEM_FLAG_ZEROMEMORY);
 
     T* node;
 
