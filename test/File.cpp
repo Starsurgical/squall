@@ -1,7 +1,5 @@
 #include "FileTest.hpp"
 
-// most of these only pass against storm.dll for now
-#if defined(WHOA_TEST_STORMDLL)
 TEST_CASE("SFileCloseArchive", "[file]") {
     HSARCHIVE archive = nullptr;
 
@@ -155,7 +153,7 @@ TEST_CASE("SFileOpenFileEx", "[file]") {
 
     SECTION("mpq testcases") {
         HSARCHIVE mpq1, mpq2, mpq3;
-        HSFILE file;
+        HSFILE file = nullptr;
 
         SECTION("opens the highest priority file from all MPQs") {
             SFileOpenArchive("wowtest1.mpq", 100, 0, &mpq1);
@@ -398,4 +396,3 @@ TEST_CASE("SFileSetFilePointer", "[file]") {
         }
     }
 }
-#endif

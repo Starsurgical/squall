@@ -57,13 +57,38 @@ int32_t STORMAPI SEvtUnregisterType(uint32_t, uint32_t) { return 0; }
 
 #include <storm/File.hpp>
 
-int32_t STORMAPI SFileCloseArchive(HSARCHIVE) { return 0; }
-int32_t STORMAPI SFileCloseFile(HSFILE) { return 0; }
-uint32_t STORMAPI SFileGetFileSize(HSFILE, uint32_t*) { return 0; }
-int32_t STORMAPI SFileOpenArchive(const char*, int32_t, uint32_t, HSARCHIVE*) { return 0; }
-int32_t STORMAPI SFileOpenFileEx(HSARCHIVE, const char*, uint32_t, HSFILE*) { return 0; }
-int32_t STORMAPI SFileReadFile(HSFILE, void*, uint32_t, uint32_t*, LPOVERLAPPED) { return 0; }
-uint32_t STORMAPI SFileSetFilePointer(HSFILE, int32_t, int32_t*, uint32_t) { return 0; }
+int32_t STORMAPI SFileCloseArchive(HSARCHIVE handle) { return 0; }
+int32_t STORMAPI SFileCloseFile(HSFILE handle) { return 0; }
+int32_t STORMAPI SFileDestroy() { return 0; }
+int32_t STORMAPI SFileEnableDirectAccess(uint32_t access) { return 0; }
+
+#if defined(WHOA_SFILE_HAS_CDROM)
+int32_t STORMAPI SFileGetArchiveInfo(HSARCHIVE archive, int32_t* priority, int32_t* cdrom) { return 0; }
+#else
+int32_t STORMAPI SFileGetArchiveInfo(HSARCHIVE archive, int32_t* priority) { return 0; }
+#endif
+
+int32_t STORMAPI SFileGetArchiveName(HSARCHIVE archive, char* buffer, uint32_t bufferchars) { return 0; }
+int32_t STORMAPI SFileGetBasePath(char* buffer, uint32_t bufferchars) { return 0; }
+int32_t STORMAPI SFileGetFileArchive(HSFILE file, HSARCHIVE* archive) { return 0; }
+int32_t STORMAPI SFileGetFileName(HSARCHIVE archive, char* buffer, uint32_t bufferchars) { return 0; }
+uint32_t STORMAPI SFileGetFileSize(HSFILE handle, uint32_t* filesizehigh) { return 0; }
+void STORMAPI SFileGetInstallPath(char* buffer, uint32_t bufferchars, int32_t includeseparator) {}
+uint16_t STORMAPI SFileGetLocale() { return 0; }
+void STORMAPI SFileGetUserDataPath(char* buffer, uint32_t bufferchars, int32_t includeseparator) {}
+int32_t STORMAPI SFileLoadFile(const char* filename, void** buffer, uint32_t* bytes, uint32_t extrabytes, LPOVERLAPPED overlapped) { return 0; }
+int32_t STORMAPI SFileLoadFileEx(HSARCHIVE archive, const char* filename, void** buffer, uint32_t* bytes, uint32_t extrabytes, uint32_t flags, LPOVERLAPPED overlapped) { return 0; }
+int32_t STORMAPI SFileOpenArchive(const char* archivename, int32_t priority, uint32_t flags, HSARCHIVE* handle) { return 0; }
+int32_t STORMAPI SFileOpenFile(const char* filename, HSFILE* handle) { return 0; }
+int32_t STORMAPI SFileOpenFileEx(HSARCHIVE archivehandle, const char* filename, uint32_t flags, HSFILE* handle) { return 0; }
+int32_t STORMAPI SFileReadFile(HSFILE handle, void* buffer, uint32_t bytestoread, uint32_t* bytesread, LPOVERLAPPED overlapped) { return 0; }
+int32_t STORMAPI SFileSetBasePath(const char* path) { return 0; }
+uint32_t STORMAPI SFileSetFilePointer(HSFILE handle, int32_t distancetomove, int32_t* distancetomovehigh, uint32_t movemethod) { return 0; }
+int32_t STORMAPI SFileSetIoErrorMode(uint32_t errormode, SFILEERRORPROC errorproc) { return 0; }
+void STORMAPI SFileSetLocale(uint16_t lcid) {}
+void STORMAPI SFileSetPlatform(uint8_t platformId) {}
+void STORMAPI SFileSetUserDataPath(const char* datapath) {}
+int32_t SFileUnloadFile(void* buffer) { return 0; }
 
 #include <storm/Memory.hpp>
 
